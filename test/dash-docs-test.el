@@ -166,4 +166,10 @@
 
 (provide 'dash-docs-test)
 
+;;;; dash-docs-get-sqlite3-args
+
+(ert-deftest dash-docs-sqlite3-args-without-version-is-backward-compatible ()
+  (let ((actual-result (dash-docs-get-sqlite3-args "/path/to/db" "SELECT ...")))
+    (should (equal '("-list" "-init" "''" "/path/to/db" "SELECT ...") actual-result))))
+
 ;;; dash-docs-test ends here

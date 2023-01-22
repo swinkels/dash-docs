@@ -145,9 +145,10 @@ If there are errors, print them in `dash-docs-debugging-buffer'"
    (with-output-to-string
      (let ((error-file (when dash-docs-enable-debugging
                          (make-temp-file "dash-docs-errors-file"))))
-       (call-process "sqlite3" nil (list standard-output error-file) nil
-                     ;; args for sqlite3:
-                     "-list" "-init" "''" db-path sql)
+       (apply
+        'call-process "sqlite3" nil (list standard-output error-file) nil
+                      ;; args for sqlite3:
+                      (dash-docs-get-sqlite3-args db-path sql))
 
        ;; display errors, stolen from emacs' `shell-command` function
        (when (and error-file (file-exists-p error-file))
@@ -164,6 +165,9 @@ If there are errors, print them in `dash-docs-debugging-buffer'"
                  (goto-char (- (point-max) pos-from-end)))
                (display-buffer (current-buffer))))
          (delete-file error-file))))))
+
+(defun dash-docs-get-sqlite3-args (db-path sql &rest sqlite3-version)
+  `("-list" "-init" "''" ,db-path ,sql))
 
 (defun dash-docs-parse-sql-results (sql-result-string)
   "Parse SQL-RESULT-STRING splitting it by newline and '|' chars."
