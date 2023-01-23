@@ -168,8 +168,23 @@
 
 ;;;; dash-docs-get-sqlite3-args
 
-(ert-deftest dash-docs-sqlite3-args-without-version-is-backward-compatible ()
-  (let ((actual-result (dash-docs-get-sqlite3-args "/path/to/db" "SELECT ...")))
-    (should (equal '("-list" "-init" "''" "/path/to/db" "SELECT ...") actual-result))))
+(ert-deftest dash-docs-sqlite3-args-with-old-version-is-backward-compatible()
+  (let ((dash-docs-sqlite3-version "3.33.0"))
+    (let ((actual-result (dash-docs-get-sqlite3-args "/path/to/db" "SELECT ...")))
+      (should (equal '("-list" "-init" "''" "/path/to/db" "SELECT ...") actual-result)))))
+
+(ert-deftest dash-docs-sqlite3-args-with-newer-version-uses-different-init()
+  (let ((dash-docs-sqlite3-version "3.34.0"))
+    (let ((actual-result (dash-docs-get-sqlite3-args "/path/to/db" "SELECT ...")))
+      (should (equal '("-list" "-init" "/dev/null" "-batch" "/path/to/db" "SELECT ...") actual-result)))))
+
+(ert-deftest dash-docs-extract-sqlite3-version-using-valid-output()
+  (let ((dash-docs-sqlite3-version "3.34.0"))
+    (let ((sqlite3-version-output '("3.34.0 2020-12-01 16:14:00 a26b6597e3ae272231b96f9982c3bcc17ddec2f2b6eb4df06a224b91089fed5b")))
+      (should (equal "3.34.0" (dash-docs-extract-sqlite3-version sqlite3-version-output))))))
+
+(ert-deftest dash-docs-extract-sqlite3-version-using-empty-output()
+  (let ((sqlite3-version-output ()))
+    (should (equal "0.0.0" (dash-docs-extract-sqlite3-version sqlite3-version-output)))))
 
 ;;; dash-docs-test ends here

@@ -104,7 +104,6 @@ the default except when using Emacs 27.
 For more information see https://github.com/magit/ghub/issues/81
 and https://debbugs.gnu.org/cgi/bugreport.cgi?bug=34341.")
 
-
 (defun dash-docs-docset-path (docset)
   "Return the full path of the directory for DOCSET."
   (let* ((base (dash-docs-docsets-path))
@@ -166,8 +165,25 @@ If there are errors, print them in `dash-docs-debugging-buffer'"
                (display-buffer (current-buffer))))
          (delete-file error-file))))))
 
-(defun dash-docs-get-sqlite3-args (db-path sql &rest sqlite3-version)
-  `("-list" "-init" "''" ,db-path ,sql))
+(defun dash-docs-get-sqlite3-args (db-path sql)
+  (if (version< dash-docs-sqlite3-version "3.34.0")
+      `("-list" "-init" "''" ,db-path ,sql)
+    `("-list" "-init" "/dev/null" "-batch" ,db-path ,sql)))
+
+(defun dash-docs-extract-sqlite3-version (sqlite3-version-output)
+  (let ((oldest-sqlite3-version "0.0.0"))
+    (if (>= (length sqlite3-version-output) 1)
+        (let ((sqlite3-version-string (car sqlite3-version-output)))
+          (if (string-match
+               "^\\([[:digit:]]+[.][[:digit:]]+[.][[:digit:]]+\\) [[:digit:]]\\{4\\}-"
+               sqlite3-version-string)
+              (match-string 1 sqlite3-version-string)
+            oldest-sqlite3-version))
+      oldest-sqlite3-version)))
+
+(defvar dash-docs-sqlite3-version
+  (dash-docs-extract-sqlite3-version (process-lines "sqlite3" "--version"))
+  "Version string of available sqlite3 binary.")
 
 (defun dash-docs-parse-sql-results (sql-result-string)
   "Parse SQL-RESULT-STRING splitting it by newline and '|' chars."
