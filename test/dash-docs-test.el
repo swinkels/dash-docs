@@ -174,9 +174,14 @@
       (should (equal '("-list" "-init" "''" "/path/to/db" "SELECT ...") actual-result)))))
 
 (ert-deftest dash-docs-sqlite3-args-with-newer-version-uses-different-init()
-  (let ((dash-docs-sqlite3-version "3.34.0"))
+  (let ((dash-docs-sqlite3-version "3.34.0") (system-type 'linux))
     (let ((actual-result (dash-docs-get-sqlite3-args "/path/to/db" "SELECT ...")))
       (should (equal '("-list" "-init" "/dev/null" "-batch" "/path/to/db" "SELECT ...") actual-result)))))
+
+(ert-deftest dash-docs-sqlite3-args-with-newer-version-uses-different-init()
+  (let ((dash-docs-sqlite3-version "3.34.0") (system-type 'windows-nt))
+    (let ((actual-result (dash-docs-get-sqlite3-args "/path/to/db" "SELECT ...")))
+      (should (equal '("-list" "-init" "nul" "-batch" "/path/to/db" "SELECT ...") actual-result)))))
 
 (ert-deftest dash-docs-extract-sqlite3-version-using-valid-output()
   (let ((dash-docs-sqlite3-version "3.34.0"))

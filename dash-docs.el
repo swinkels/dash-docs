@@ -168,7 +168,8 @@ If there are errors, print them in `dash-docs-debugging-buffer'"
 (defun dash-docs-get-sqlite3-args (db-path sql)
   (if (version< dash-docs-sqlite3-version "3.34.0")
       `("-list" "-init" "''" ,db-path ,sql)
-    `("-list" "-init" "/dev/null" "-batch" ,db-path ,sql)))
+    (let ((null-device (if (eq system-type 'windows-nt) "nul" "/dev/null")))
+      `("-list" "-init" ,null-device "-batch" ,db-path ,sql))))
 
 (defun dash-docs-extract-sqlite3-version (sqlite3-version-output)
   (let ((oldest-sqlite3-version "0.0.0"))
