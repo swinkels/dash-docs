@@ -166,12 +166,27 @@ If there are errors, print them in `dash-docs-debugging-buffer'"
          (delete-file error-file))))))
 
 (defun dash-docs-get-sqlite3-args (db-path sql)
+  "Return SQLite args to run the SQL command in the db at DB-PATH.
+
+These args depend on the SQLite version and the OS version used.
+"
+  ;; To avoid any initialization when SQLite runs the command, use the init
+  ;; option. For SQLite versions older than 3.34.0, you would use arguments
+  ;; "-init ''" to do so. As of that version, SQLite reports the error that file
+  ;; '' doesn't exist and you need to pass the null device instead. For those
+  ;; versions, you also have to provide argument "-batch" to avoid the output of
+  ;; status information.
   (if (version< dash-docs-sqlite3-version "3.34.0")
       `("-list" "-init" "''" ,db-path ,sql)
     (let ((null-device (if (eq system-type 'windows-nt) "nul" "/dev/null")))
       `("-list" "-init" ,null-device "-batch" ,db-path ,sql))))
 
 (defun dash-docs-extract-sqlite3-version (sqlite3-version-output)
+  "Extract the SQLite version from SQLITE3-VERSION-OUTPUT.
+SQLITE3-VERSION-OUTPUT is the output of a call to \"sqlite3
+--version\" as a list of strings. If this function cannot parse
+that output, it returns \"0.0.0\", which serves as the (fake)
+oldest version of SQLite."
   (let ((oldest-sqlite3-version "0.0.0"))
     (if (>= (length sqlite3-version-output) 1)
         (let ((sqlite3-version-string (car sqlite3-version-output)))
@@ -184,7 +199,9 @@ If there are errors, print them in `dash-docs-debugging-buffer'"
 
 (defvar dash-docs-sqlite3-version
   (dash-docs-extract-sqlite3-version (process-lines "sqlite3" "--version"))
-  "Version string of available sqlite3 binary.")
+  "Version of available sqlite3 binary.
+This version string is retrieved by executing \"sqlite3
+--version\" and parsing its output.")
 
 (defun dash-docs-parse-sql-results (sql-result-string)
   "Parse SQL-RESULT-STRING splitting it by newline and '|' chars."
