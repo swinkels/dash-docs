@@ -147,7 +147,7 @@ If there are errors, print them in `dash-docs-debugging-buffer'"
        (apply
         'call-process "sqlite3" nil (list standard-output error-file) nil
                       ;; args for sqlite3:
-                      (dash-docs-get-sqlite3-args db-path sql))
+                      (dash-docs-get-sqlite-args db-path sql))
 
        ;; display errors, stolen from emacs' `shell-command` function
        (when (and error-file (file-exists-p error-file))
@@ -165,7 +165,7 @@ If there are errors, print them in `dash-docs-debugging-buffer'"
                (display-buffer (current-buffer))))
          (delete-file error-file))))))
 
-(defun dash-docs-get-sqlite3-args (db-path sql)
+(defun dash-docs-get-sqlite-args (db-path sql)
   "Return SQLite args to run the SQL command in the db at DB-PATH.
 
 These args depend on the SQLite version and the OS version used.
@@ -176,29 +176,29 @@ These args depend on the SQLite version and the OS version used.
   ;; '' doesn't exist and you need to pass the null device instead. For those
   ;; versions, you also have to provide argument "-batch" to avoid the output of
   ;; status information.
-  (if (version< dash-docs-sqlite3-version "3.34.0")
+  (if (version< dash-docs-sqlite-version "3.34.0")
       `("-list" "-init" "''" ,db-path ,sql)
     (let ((null-device (if (eq system-type 'windows-nt) "nul" "/dev/null")))
       `("-list" "-init" ,null-device "-batch" ,db-path ,sql))))
 
-(defun dash-docs-extract-sqlite3-version (sqlite3-version-output)
-  "Extract the SQLite version from SQLITE3-VERSION-OUTPUT.
-SQLITE3-VERSION-OUTPUT is the output of a call to \"sqlite3
+(defun dash-docs-extract-sqlite-version (sqlite-version-output)
+  "Extract the SQLite version from SQLITE-VERSION-OUTPUT.
+SQLITE-VERSION-OUTPUT is the output of a call to \"sqlite3
 --version\" as a list of strings. If this function cannot parse
 that output, it returns \"0.0.0\", which serves as the (fake)
 oldest version of SQLite."
-  (let ((oldest-sqlite3-version "0.0.0"))
-    (if (>= (length sqlite3-version-output) 1)
-        (let ((sqlite3-version-string (car sqlite3-version-output)))
+  (let ((oldest-sqlite-version "0.0.0"))
+    (if (>= (length sqlite-version-output) 1)
+        (let ((sqlite-version-string (car sqlite-version-output)))
           (if (string-match
                "^\\([[:digit:]]+[.][[:digit:]]+[.][[:digit:]]+\\) [[:digit:]]\\{4\\}-"
-               sqlite3-version-string)
-              (match-string 1 sqlite3-version-string)
-            oldest-sqlite3-version))
-      oldest-sqlite3-version)))
+               sqlite-version-string)
+              (match-string 1 sqlite-version-string)
+            oldest-sqlite-version))
+      oldest-sqlite-version)))
 
-(defvar dash-docs-sqlite3-version
-  (dash-docs-extract-sqlite3-version (process-lines "sqlite3" "--version"))
+(defvar dash-docs-sqlite-version
+  (dash-docs-extract-sqlite-version (process-lines "sqlite3" "--version"))
   "Version of available sqlite3 binary.
 This version string is retrieved by executing \"sqlite3
 --version\" and parsing its output.")
