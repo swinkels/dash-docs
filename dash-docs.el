@@ -168,7 +168,7 @@ If there are errors, print them in `dash-docs-debugging-buffer'"
 (defun dash-docs-get-sqlite-args (db-path sql)
   "Return SQLite args to run the SQL command in the db at DB-PATH.
 
-These args depend on the SQLite version and the OS version used.
+These args depend on the SQLite version.
 "
   ;; To avoid any initialization when SQLite runs the command, use the init
   ;; option. For SQLite versions older than 3.34.0, you would use arguments
@@ -178,8 +178,7 @@ These args depend on the SQLite version and the OS version used.
   ;; status information.
   (if (version< dash-docs-sqlite-version "3.34.0")
       `("-list" "-init" "''" ,db-path ,sql)
-    (let ((null-device (if (eq system-type 'windows-nt) "nul" "/dev/null")))
-      `("-list" "-init" ,null-device "-batch" ,db-path ,sql))))
+    `("-list" "-init" ,null-device "-batch" ,db-path ,sql)))
 
 (defun dash-docs-extract-sqlite-version (sqlite-version-output)
   "Extract the SQLite version from SQLITE-VERSION-OUTPUT.

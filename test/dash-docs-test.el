@@ -174,14 +174,15 @@
       (should (equal '("-list" "-init" "''" "/path/to/db" "SELECT ...") actual-result)))))
 
 (ert-deftest dash-docs-sqlite-args-with-newer-version-uses-different-init()
-  (let ((dash-docs-sqlite-version "3.34.0") (system-type 'linux))
+  (let ((dash-docs-sqlite-version "3.34.0") (null-device "/dev/null"))
     (let ((actual-result (dash-docs-get-sqlite-args "/path/to/db" "SELECT ...")))
       (should (equal '("-list" "-init" "/dev/null" "-batch" "/path/to/db" "SELECT ...") actual-result)))))
 
-(ert-deftest dash-docs-sqlite-args-with-newer-version-uses-different-init()
-  (let ((dash-docs-sqlite-version "3.34.0") (system-type 'windows-nt))
+(ert-deftest dash-docs-sqlite-args-with-newer-version-uses-different-init-and-null-device()
+  ;; null-device "NUL" is used by Windows
+  (let ((dash-docs-sqlite-version "3.34.0") (null-device "NUL"))
     (let ((actual-result (dash-docs-get-sqlite-args "/path/to/db" "SELECT ...")))
-      (should (equal '("-list" "-init" "nul" "-batch" "/path/to/db" "SELECT ...") actual-result)))))
+      (should (equal '("-list" "-init" "NUL" "-batch" "/path/to/db" "SELECT ...") actual-result)))))
 
 (ert-deftest dash-docs-extract-sqlite-version-using-valid-output()
   (let ((dash-docs-sqlite-version "3.34.0"))
